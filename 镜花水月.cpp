@@ -7,7 +7,6 @@
 #include <conio.h>
 using namespace std;
 
-//#define KEYDOWN(vk_code) ((GetAsyncKeyState(vk_code) & 0x8000) ? 1 : 0)
 #define KEYDOWN(vk_code) ((GetKeyState(vk_code) & 0x8000) ? 1 : 0)
 #define RAND(min,max) ((rand()%((min)-(max)+1))+(min))
 #define MAY(x) (RAND(0,10000)<=(x)*100)
@@ -128,11 +127,6 @@ void rgb_set(int wr, int wg, int wb, int br, int bg, int bb)
 
 void inline outputWithType(int type)
 {//根据内容输出
-/*if (type == Starting_point)
-{
-	printf("OO");
-}
-else*/
 	if (type == NOTHING || type == FINDBACK)
 	{
 		//rgb_set(255, 255, 255, 0, 0, 0);
@@ -199,21 +193,6 @@ void inline output(int i, int j)
 		else if (dir[1] == right)printf(" >");
 		rgb_set(204, 204, 204, 0, 0, 0);
 	}
-	/*else if (model.y == 2 && i == player[0].x && j == player[0].y && i == player[1].x && j == player[1].y) {
-		rgb_set(255, 255, 0, 0, 0, 0);
-		printf("AB");
-		rgb_set(204, 204, 204, 0, 0, 0);
-	}
-	else if (model.y == 2 && i == player[0].x && j == player[0].y) {
-		rgb_set(255, 255, 0, 0, 0, 0);
-		printf("A ");
-		rgb_set(204, 204, 204, 0, 0, 0);
-	}
-	else if (model.y == 2 && i == player[1].x && j == player[1].y) {
-		rgb_set(255, 255, 0, 0, 0, 0);
-		printf(" B");
-		rgb_set(204, 204, 204, 0, 0, 0);
-	}*/
 	else outputWithType(G[i][j]);
 }
 
@@ -589,28 +568,6 @@ void moveMosnters()
 		moveMonster(i);
 	}
 }
-
-//void autofind_old(int num, bool if3D) {//递归暴搜
-//	if (num == model.y - 1) show(if3D);
-//	if (G[player[num].x][player[num].y] == Destination) return;
-//	G[player[num].x][player[num].y] = FINDED;
-//	for (int i = 0; i < 4; i++)
-//	{
-//		if (G[player[num].x + step[i]][player[num].y + step[i + 4]] != WALL
-//			&& G[player[num].x + step[i]][player[num].y + step[i + 4]] != FINDED)
-//		{
-//			dir[0] = stepdir[i];
-//			player[num].x += step[i];
-//			player[num].y += step[i + 4];
-//			if (num < model.y - 1) autofind_old(num + 1, if3D);
-//			else autofind_old(0, if3D);
-//			if (G[player[num].x][player[num].y] == Destination) return;
-//			player[num].x -= step[i];
-//			player[num].y -= step[i + 4];
-//		}
-//	}
-//	G[player[num].x][player[num].y] = NOTHING;
-//}
 
 void autofind(bool if3D = false)
 {//自动寻路(我焯，挂)
@@ -989,27 +946,21 @@ point menu()
 		{
 			middle("『闯关模式』", 7);
 			middle("  自由模式  ", 9);
-			middle("  娱乐模式  ", 11);
-			middle("  按键说明  ", 13);
 		}
 		else if (choose.x == 2)
 		{
 			middle("  闯关模式  ", 7);
 			middle("『自由模式』", 9);
 			middle("  娱乐模式  ", 11);
-			middle("  按键说明  ", 13);
 		}
 		else if (choose.x == 3)
 		{
-			middle("  闯关模式  ", 7);
 			middle("  自由模式  ", 9);
 			middle("『娱乐模式』", 11);
 			middle("  按键说明  ", 13);
 		}
 		else if (choose.x == 4)
 		{
-			middle("  闯关模式  ", 7);
-			middle("  自由模式  ", 9);
 			middle("  娱乐模式  ", 11);
 			middle("『按键说明』", 13);
 		}
@@ -1146,8 +1097,8 @@ int main()
 					if (model.x == 3)
 					{
 						show();
-						//temp = _getch();
-						//if (temp == -32) temp = _getch();
+						temp = _getch();
+						if (temp == -32) temp = _getch();
 					}
 					if (i < checknum - 1)
 					{
