@@ -95,13 +95,6 @@ void gotoxy(int x = 0, int y = 0)
 	SetConsoleCursorPosition(hOut, pos);
 }
 
-void gotoyx(int x, int y)
-{
-	COORD pos = { y * 2,x };
-	HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
-	SetConsoleCursorPosition(hOut, pos);
-}
-
 void HideCursor(int n = 0)
 {//隐藏光标
 	CONSOLE_CURSOR_INFO cursor_info = { 1,n };
@@ -148,7 +141,8 @@ int SleepAndClear(long long i)
 {
 	int key = -1;
 	long long t = GetTickCount64();
-	while (GetTickCount64() - t < i) {
+	while (GetTickCount64() - t < i)
+	{
 		key = _getch();
 		if (key == 0 || key == 0xE0) key = key << 8 | _getch();
 	}
@@ -173,7 +167,8 @@ void inline outputWithType(int type)
 		//rgb_set(255, 255, 0, 0, 0, 0);
 		printf("**");
 	}
-	else if (type == MONSTER) {
+	else if (type == MONSTER)
+	{
 		rgb_set(204, 0, 0, 0, 0, 0);
 		printf("@@");
 		rgb_set(204, 204, 204, 0, 0, 0);
@@ -672,9 +667,11 @@ void autofind(bool if3D = false)
 			else qshow(player[num], last_player[num]);
 		}
 		if (book) { delete[]s; return; }
-		if (KEYDOWN(VK_ESCAPE)) {
+		if (KEYDOWN(VK_ESCAPE))
+		{
 			int temp = SleepAndClear(100);
-			if (temp == ESC) {
+			if (temp == ESC)
+			{
 				for (int i = 0; i <= m + 1; i++)
 					for (int j = 0; j <= n + 1; j++)
 						if (G[i][j] == FINDED || G[i][j] == FINDBACK) G[i][j] = NOTHING;
@@ -755,6 +752,7 @@ void inline move()
 	}
 	moveMosnters();
 }
+
 
 void dirmove(int d)
 {//视角转动
@@ -1058,7 +1056,7 @@ int main()
 				cout << "请输入正确的迷宫大小\n";
 				temp = _getch();
 				if (temp == 0 || temp == 0xE0) _getch();
-				//cin.clear();
+				cin.clear();
 				while ((temp = getchar()) != '\n');
 				continue;
 			}
@@ -1075,7 +1073,7 @@ int main()
 				cout << "请输入正确的迷宫大小\n";
 				temp = _getch();
 				if (temp == 0 || temp == 0xE0) _getch();
-				//cin.clear();
+				cin.clear();
 				while ((temp = getchar()) != '\n');
 				continue;
 			}
@@ -1130,7 +1128,12 @@ int main()
 					if (G[player[i].x][player[i].y] == MONSTER)
 					{
 						--model.y;
-						if (i == 0)player[0] = player[1];
+						if (i == 0)
+						{
+							player[0] = player[1];
+							playerlive = false;
+						}
+						show();
 					}
 				}
 				if (des || model.y == 0)
@@ -1164,6 +1167,7 @@ int main()
 						middle("按任意键继续", 9);
 						middle("按R键重置本关", 11);
 					}
+					SleepAndClear(1000);
 					outbreak = true;
 					while (1)
 					{
