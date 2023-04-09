@@ -120,9 +120,17 @@ void rgb_init()
 	SetConsoleMode(hOut, dwOutMode);					//设置控制台输出模式
 }
 
-void rgb_set(int wr, int wg, int wb, int br, int bg, int bb)
+void inline rgb_set(int wr, int wg, int wb, int br, int bg, int bb)
 {//设置RGB
 	printf("\033[38;2;%d;%d;%dm\033[48;2;%d;%d;%dm", wr, wg, wb, br, bg, bb);	//\033[38表示前景，\033[48表示背景，三个%d表示混合的数
+}
+
+char SleepAndClear(long long i)
+{
+	char key;
+	long long t = GetTickCount64();
+	while (GetTickCount64() - t < i)key = _getch();
+	return key;
 }
 
 void inline outputWithType(int type)
@@ -857,8 +865,7 @@ point menu()
 	{
 		if (first)
 		{
-			long long t = GetTickCount64();
-			while (GetTickCount64() - t < 1000)key = _getch();
+			key = SleepAndClear(1000);
 			first = false;
 		}
 		else
@@ -1148,7 +1155,7 @@ int main()
 				if (!isGameKey()) continue;
 				if (KEYDOWN(VK_ESCAPE))
 				{
-					temp = _getch();
+					temp = SleepAndClear(300);
 					//while ((temp = _getch()) != 27);
 					break;
 				}
