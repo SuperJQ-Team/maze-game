@@ -148,8 +148,7 @@ int SleepAndClear(long long i)
 {
 	int key = -1;
 	long long t = GetTickCount64();
-	while (GetTickCount64() - t < i)
-	{
+	while (GetTickCount64() - t < i) {
 		key = _getch();
 		if (key == 0 || key == 0xE0) key = key << 8 | _getch();
 	}
@@ -174,8 +173,7 @@ void inline outputWithType(int type)
 		//rgb_set(255, 255, 0, 0, 0, 0);
 		printf("**");
 	}
-	else if (type == MONSTER)
-	{
+	else if (type == MONSTER) {
 		rgb_set(204, 0, 0, 0, 0, 0);
 		printf("@@");
 		rgb_set(204, 204, 204, 0, 0, 0);
@@ -538,7 +536,7 @@ void MapGeneration()
 	return;
 }
 
-void inline qshow(point pos, point pos2 = point(-1, -1))
+void inline qshow(point pos, point pos2 = point(0, 0))
 {//快速刷新
 	point p1 = point((pos.y + MAXWIDTH / 2 - camera.y) * 2, (pos.x + MAXHEIGHT / 2 - camera.x)),
 		p2 = point((pos2.y + MAXWIDTH / 2 - camera.y) * 2, (pos2.x + MAXHEIGHT / 2 - camera.x));
@@ -674,11 +672,9 @@ void autofind(bool if3D = false)
 			else qshow(player[num], last_player[num]);
 		}
 		if (book) { delete[]s; return; }
-		if (KEYDOWN(VK_ESCAPE))
-		{
+		if (KEYDOWN(VK_ESCAPE)) {
 			int temp = SleepAndClear(100);
-			if (temp == ESC)
-			{
+			if (temp == ESC) {
 				for (int i = 0; i <= m + 1; i++)
 					for (int j = 0; j <= n + 1; j++)
 						if (G[i][j] == FINDED || G[i][j] == FINDBACK) G[i][j] = NOTHING;
@@ -701,7 +697,7 @@ void autofind(bool if3D = false)
 void inline move()
 {//移动
 	int i = model.y - 1;
-	last_player[i] = player[i];
+	for (int j = 0; j <= i; j++) last_player[j] = player[j];
 	if (KEYDOWN(VK_UP) && G[player[i].x - 1][player[i].y] != WALL)
 	{
 		player[i].x--;
@@ -722,45 +718,40 @@ void inline move()
 		player[i].y++;
 		dir[i] = right;
 	}
-
-
+	if (KEYDOWN('W') && G[player[0].x - 1][player[0].y] != WALL)
 	{
-		last_player[0] = player[0];
-		if (KEYDOWN('W') && G[player[0].x - 1][player[0].y] != WALL)
+		player[0].x--;
+		dir[0] = up;
+	}
+	else if (KEYDOWN('S') && G[player[0].x + 1][player[0].y] != WALL)
+	{
+		player[0].x++;
+		dir[0] = down;
+	}
+	else if (KEYDOWN('A') && G[player[0].x][player[0].y - 1] != WALL)
+	{
+		player[0].y--;
+		dir[0] = left;
+	}
+	else if (KEYDOWN('D') && G[player[0].x][player[0].y + 1] != WALL)
+	{
+		player[0].y++;
+		dir[0] = right;
+	}
+	else if (KEYDOWN('R'))
+	{
+		for (int i = 0; i < 2; i++)
 		{
-			player[0].x--;
-			dir[0] = up;
+			player[i] = { 1,1 };
+			dir[i] = down;
 		}
-		else if (KEYDOWN('S') && G[player[0].x + 1][player[0].y] != WALL)
-		{
-			player[0].x++;
-			dir[0] = down;
-		}
-		else if (KEYDOWN('A') && G[player[0].x][player[0].y - 1] != WALL)
-		{
-			player[0].y--;
-			dir[0] = left;
-		}
-		else if (KEYDOWN('D') && G[player[0].x][player[0].y + 1] != WALL)
-		{
-			player[0].y++;
-			dir[0] = right;
-		}
-		else if (KEYDOWN('R'))
-		{
-			for (int i = 0; i < 2; i++)
-			{
-				player[i] = { 1,1 };
-				dir[i] = down;
-			}
-			G[m][n] = Destination;
-		}
-		else if (KEYDOWN('P'))
-		{
-			autofind(false);
-			int temp = _getch();
-			if (temp == 0 || temp == 0xE0) _getch();
-		}
+		G[m][n] = Destination;
+	}
+	else if (KEYDOWN('P'))
+	{
+		autofind(false);
+		int temp = _getch();
+		if (temp == 0 || temp == 0xE0) _getch();
 	}
 	moveMosnters();
 }
@@ -1067,7 +1058,7 @@ int main()
 				cout << "请输入正确的迷宫大小\n";
 				temp = _getch();
 				if (temp == 0 || temp == 0xE0) _getch();
-				cin.clear();
+				//cin.clear();
 				while ((temp = getchar()) != '\n');
 				continue;
 			}
@@ -1084,7 +1075,7 @@ int main()
 				cout << "请输入正确的迷宫大小\n";
 				temp = _getch();
 				if (temp == 0 || temp == 0xE0) _getch();
-				cin.clear();
+				//cin.clear();
 				while ((temp = getchar()) != '\n');
 				continue;
 			}
@@ -1139,12 +1130,7 @@ int main()
 					if (G[player[i].x][player[i].y] == MONSTER)
 					{
 						--model.y;
-						if (i == 0)
-						{
-							player[0] = player[1];
-							playerlive = false;
-						}
-						show();
+						if (i == 0)player[0] = player[1];
 					}
 				}
 				if (des || model.y == 0)
@@ -1178,7 +1164,6 @@ int main()
 						middle("按任意键继续", 9);
 						middle("按R键重置本关", 11);
 					}
-					SleepAndClear(1000);
 					outbreak = true;
 					while (1)
 					{
