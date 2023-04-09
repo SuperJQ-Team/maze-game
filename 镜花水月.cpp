@@ -1,4 +1,10 @@
-﻿#include <iostream>
+﻿/*
+*	 By Arnock、Bromine
+*
+*	 2023/04/09
+*/
+
+#include <iostream>
 #include <stdio.h>
 #include <vector>
 #include <stack>
@@ -26,6 +32,10 @@ using namespace std;
 #define ESC 27
 #define ENTER 13
 #define SPACE 32
+#define up_key 57416
+#define down_key 57424
+#define left_key 57419
+#define right_key 57421
 #define maxViewLen 10
 #define maxViewWright 100
 #define MAXHEIGHT 47
@@ -58,6 +68,7 @@ struct point
 	}
 }player[2], last_player[2], camera, monster[20];
 
+bool playerlive;
 int monster_num = 2;
 vector<block> myblock;
 int x_num = 1, y_num = 1;//矿工位置
@@ -76,9 +87,17 @@ const int difficulty[5][2] = {
 	{MAXHEIGHT,MAXWIDTH},
 };
 
+
 void gotoxy(int x = 0, int y = 0)
 {//移动光标
 	COORD pos = { x,y };
+	HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+	SetConsoleCursorPosition(hOut, pos);
+}
+
+void gotoyx(int x, int y)
+{
+	COORD pos = { y * 2,x };
 	HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
 	SetConsoleCursorPosition(hOut, pos);
 }
@@ -125,11 +144,14 @@ void inline rgb_set(int wr, int wg, int wb, int br, int bg, int bb)
 	printf("\033[38;2;%d;%d;%dm\033[48;2;%d;%d;%dm", wr, wg, wb, br, bg, bb);	//\033[38表示前景，\033[48表示背景，三个%d表示混合的数
 }
 
-char SleepAndClear(long long i)
+int SleepAndClear(long long i)
 {
-	char key;
+	int key = -1;
 	long long t = GetTickCount64();
-	while (GetTickCount64() - t < i)key = _getch();
+	while (GetTickCount64() - t < i) {
+		key = _getch();
+		if (key == 0 || key == 0xE0) key = key << 8 | _getch();
+	}
 	return key;
 }
 
@@ -151,6 +173,11 @@ void inline outputWithType(int type)
 		//rgb_set(255, 255, 0, 0, 0, 0);
 		printf("**");
 	}
+	else if (type == MONSTER) {
+		rgb_set(204, 0, 0, 0, 0, 0);
+		printf("@@");
+		rgb_set(204, 204, 204, 0, 0, 0);
+	}
 	else
 	{
 		//rgb_set(255, 255, 255, 255, 255, 255);
@@ -163,7 +190,10 @@ void inline output(int i, int j)
 {//输出G[i][j]
 	if (model.y == 1 && i == player[0].x && j == player[0].y)
 	{
-		rgb_set(255, 255, 0, 0, 0, 0);
+		if (playerlive)
+			rgb_set(255, 255, 0, 0, 0, 0);
+		else
+			rgb_set(255, 0, 0, 0, 0, 0);
 		if (dir[0] == up)printf("AA");
 		else if (dir[0] == down)printf("VV");
 		else if (dir[0] == left)printf("<<");
@@ -221,7 +251,7 @@ bool isAnyKey()
 {
 	for (int i = 0; i < 0xFF; ++i)
 	{
-		if (KEYDOWN(i))return true;
+		if (KEYDOWN(i)) return true;
 	}
 	return false;
 }
@@ -388,6 +418,7 @@ void init()
 		dir[i] = down;
 	}
 	camera = { MAXHEIGHT / 2, MAXWIDTH / 2 };
+	playerlive = true;
 }
 
 void FindBlock()
@@ -507,23 +538,33 @@ void MapGeneration()
 
 void inline qshow(point pos, point pos2 = point(-1, -1))
 {//快速刷新
-	gotoxy((pos.y + MAXWIDTH / 2 - camera.y) * 2, (pos.x + MAXHEIGHT / 2 - camera.x));
-	output(pos.x, pos.y);
-	gotoxy((pos2.y + MAXWIDTH / 2 - camera.y) * 2, (pos2.x + MAXHEIGHT / 2 - camera.x));
-	output(pos2.x, pos2.y);
+	point p1 = point((pos.y + MAXWIDTH / 2 - camera.y) * 2, (pos.x + MAXHEIGHT / 2 - camera.x)),
+		p2 = point((pos2.y + MAXWIDTH / 2 - camera.y) * 2, (pos2.x + MAXHEIGHT / 2 - camera.x));
+	if (p1.x >= 0 && p1.x <= MAXWIDTH * 2 && p1.y >= 0 && p1.y <= MAXHEIGHT)
+	{
+		gotoxy(p1.x, p1.y);
+		output(pos.x, pos.y);
+	}
+	if (p2.x >= 0 && p2.x <= MAXWIDTH * 2 && p2.y >= 0 && p2.y <= MAXHEIGHT)
+	{
+		gotoxy(p2.x, p2.y);
+		output(pos2.x, pos2.y);
+	}
 	Sleep(1);
 }
 
 void inline show(bool if3D = false)
 {//刷新
 	bool camera_move = false;
-	if (m > MAXHEIGHT || n > MAXWIDTH)
-	{
-		if (player[0].x < camera.x - MAXHEIGHT / 3 && camera.x > MAXHEIGHT / 2) { camera.x--; camera_move = true; }
-		else if (player[0].x > camera.x + MAXHEIGHT / 3 && camera.x < m - MAXHEIGHT / 2 - 1) { camera.x++; camera_move = true; }
-		else if (player[0].y < camera.y - MAXWIDTH / 3 && camera.y > MAXWIDTH / 2) { camera.y--; camera_move = true; }
-		else if (player[0].y > camera.y + MAXWIDTH / 3 && camera.y < n - MAXWIDTH / 2 - 1) { camera.y++; camera_move = true; }
-	}
+	for (int i = 0; i < model.y; ++i)
+		if (m > MAXHEIGHT || n > MAXWIDTH)
+		{
+			if (player[i].x < camera.x - MAXHEIGHT / 3 && camera.x > MAXHEIGHT / 2) { camera.x--; camera_move = true; }
+			else if (player[i].x > camera.x + MAXHEIGHT / 3 && camera.x < m - MAXHEIGHT / 2 - 1) { camera.x++; camera_move = true; }
+			else if (player[i].y < camera.y - MAXWIDTH / 3 && camera.y > MAXWIDTH / 2) { camera.y--; camera_move = true; }
+			else if (player[i].y > camera.y + MAXWIDTH / 3 && camera.y < n - MAXWIDTH / 2 - 1) { camera.y++; camera_move = true; }
+			break;
+		}
 	if (if3D) show3D();
 	else
 	{
@@ -580,7 +621,6 @@ void moveMosnters()
 void autofind(bool if3D = false)
 {//自动寻路(我焯，挂)
 	stack<point>* s = new stack<point>[model.y]();
-	//stack<int>* s = new stack<int>[model.y]();
 	bool book = true;
 	bool temp = true;
 	for (int num = 0; num < model.y; num++)
@@ -590,7 +630,6 @@ void autofind(bool if3D = false)
 				&& G[player[num].x + step[i]][player[num].y + step[i + 4]] != FINDED)
 			{
 				s[num].push(point(player[num].x + step[i], player[num].y + step[i + 4]));
-				//s[num].push(i);
 			}
 		G[player[num].x][player[num].y] = FINDED;
 	}
@@ -621,7 +660,6 @@ void autofind(bool if3D = false)
 						&& G[player[num].x + step[i]][player[num].y + step[i + 4]] != FINDBACK)
 					{
 						s[num].push(point(player[num].x + step[i], player[num].y + step[i + 4]));
-						//s[num].push(i);
 						temp = false;
 					}
 				if (temp)
@@ -634,6 +672,25 @@ void autofind(bool if3D = false)
 			else qshow(player[num], last_player[num]);
 		}
 		if (book) { delete[]s; return; }
+		if (KEYDOWN(VK_ESCAPE)) {
+			int temp = SleepAndClear(100);
+			if (temp == ESC) {
+				for (int i = 0; i <= m + 1; i++)
+					for (int j = 0; j <= n + 1; j++)
+						if (G[i][j] == FINDED || G[i][j] == FINDBACK) G[i][j] = NOTHING;
+				gotoxy(0, 0);
+				for (int i = max(0, camera.x - MAXHEIGHT / 2); i < min(m + 2, camera.x + MAXHEIGHT / 2 + 3); i++)
+				{
+					for (int j = max(0, camera.y - MAXWIDTH / 2); j < min(n + 2, camera.y + MAXWIDTH / 2 + 3); j++)
+					{
+						output(i, j);
+					}
+					printf("\n");
+				}
+				delete[]s;
+				return;
+			}
+		}
 	}
 }
 
@@ -662,7 +719,7 @@ void inline move()
 		dir[i] = right;
 	}
 
-	else
+	
 	{
 		last_player[0] = player[0];
 		if (KEYDOWN('W') && G[player[0].x - 1][player[0].y] != WALL)
@@ -697,8 +754,8 @@ void inline move()
 		else if (KEYDOWN('P'))
 		{
 			autofind(false);
-			char temp = _getch();
-			if (temp == -32) temp = _getch();
+			int temp = _getch();
+			if (temp == 0 || temp == 0xE0) _getch();
 		}
 	}
 	moveMosnters();
@@ -803,8 +860,8 @@ void move3D()
 	else if (KEYDOWN('P'))
 	{
 		autofind(true);
-		char temp = _getch();
-		if (temp == -32) temp = _getch();
+		int temp = _getch();
+		if (temp == 0 || temp == 0xE0)  _getch();
 	}
 	else if (KEYDOWN('M'))
 	{
@@ -817,8 +874,7 @@ void move3D()
 			}
 			printf("\n");
 		}
-		char temp = _getch();
-		if (temp == -32) temp = _getch();
+		SleepAndClear(300);
 	}
 }
 
@@ -842,16 +898,14 @@ void exitgame()
 	middle("再次按Esc键退出", 9);
 	middle("其他任意键返回", 12);
 	Sleep(200);
-	char temp = _getch();
-	if (temp == ESC) exit(0);
+	if (_getch() == ESC) exit(0);
 	return;
 }
 
 point menu()
 {//菜单
-	point choose;
-	choose.x = choose.y = 1;
-	char key;
+	point choose = { 1,1 };
+	int key;
 	system("cls");
 	SetFont(font);
 	middle("欢迎来到 镜花水月", 2);
@@ -865,26 +919,13 @@ point menu()
 	{
 		if (first)
 		{
-			key = SleepAndClear(1000);
+			key = SleepAndClear(300);
 			first = false;
 		}
-		else
-			key = _getch();
-		if (key == -32)
-		{
-			key = _getch();
-			switch (key)
-			{
-			case 72:
-				if (choose.x > 1) choose.x--;
-				break;
-			case 80:
-				if (choose.x < 4) choose.x++;
-				break;
-			}
-		}
-		else if ((key == 'w' || key == 'W') && choose.x > 1) choose.x--;
-		else if ((key == 's' || key == 'S') && choose.x < 4) choose.x++;
+		key = _getch();
+		if (key == 0 || key == 0xE0) key = key << 8 | _getch();
+		if ((key == 'w' || key == 'W' || key == up_key) && choose.x > 1) choose.x--;
+		else if ((key == 's' || key == 'S' || key == down_key) && choose.x < 4) choose.x++;
 		else if (key == ENTER || key == SPACE)
 		{
 			system("cls");
@@ -894,21 +935,9 @@ point menu()
 			while (1)
 			{
 				key = _getch();
-				if (key == -32)
-				{
-					key = _getch();
-					switch (key)
-					{
-					case 72:
-						choose.y = 1;
-						break;
-					case 80:
-						choose.y = 2;
-						break;
-					}
-				}
-				else if ((key == 'w' || key == 'W')) choose.y = 1;
-				else if ((key == 's' || key == 'S')) choose.y = 2;
+				if (key == 0 || key == 0xE0) key = key << 8 | _getch();
+				if ((key == 'w' || key == 'W' || key == up_key)) choose.y = 1;
+				else if ((key == 's' || key == 'S' || key == down_key)) choose.y = 2;
 				else if (key == ENTER || key == SPACE)
 				{
 					system("cls");
@@ -939,7 +968,6 @@ point menu()
 		}
 		else if (key == ESC)
 		{
-			system("cls");
 			exitgame();
 			system("cls");
 			middle("欢迎来到 镜花水月", 2);
@@ -991,6 +1019,7 @@ void start()
 	WindowMax();
 	HideCursor();
 	rgb_init();
+	rgb_set(204, 204, 204, 0, 0, 0);
 	system("cls");
 }
 
@@ -1007,7 +1036,7 @@ bool isGameKey()
 int main()
 {
 	start();
-	int checknum = 1;
+	int checknum = 1;//关卡数量
 	int key, temp;
 	while (1)
 	{
@@ -1022,7 +1051,7 @@ int main()
 			system("title 镜花水月 闯关模式");
 			checknum = 5;
 			temp = _getch();
-			if (temp == -32) temp = _getch();
+			if (temp == 0 || temp == 0xE0) _getch();
 			break;
 		case 2:
 			cout << "请输入迷宫的行数、列数：\n";
@@ -1033,8 +1062,8 @@ int main()
 			{
 				cout << "请输入正确的迷宫大小\n";
 				temp = _getch();
-				if (temp == -32) temp = _getch();
-				cin.clear();
+				if (temp == 0 || temp == 0xE0) _getch();
+				//cin.clear();
 				while ((temp = getchar()) != '\n');
 				continue;
 			}
@@ -1050,8 +1079,8 @@ int main()
 			{
 				cout << "请输入正确的迷宫大小\n";
 				temp = _getch();
-				if (temp == -32) temp = _getch();
-				cin.clear();
+				if (temp == 0 || temp == 0xE0) _getch();
+				//cin.clear();
 				while ((temp = getchar()) != '\n');
 				continue;
 			}
@@ -1061,7 +1090,7 @@ int main()
 		case 4:
 			InstructionBook();
 			temp = _getch();
-			if (temp == -32) temp = _getch();
+			if (temp == 0 || temp == 0xE0) _getch();
 			continue;
 			break;
 		default:
@@ -1080,7 +1109,9 @@ int main()
 			}
 			MapGeneration();		//生成地图
 			G[m][n] = Destination;	//设定终点
+			initMonster();
 			bool des = false;
+			bool die = false;
 			bool outbreak = true;
 			if (model.x == 3) show3D();	//显示地图
 			else
@@ -1099,24 +1130,42 @@ int main()
 			{
 				for (int i = 0; i < model.y; i++)
 					if (G[player[i].x][player[i].y] == Destination) des = true;
-				if (des)
+				for (int i = 0; i < model.y; i++)
+				{
+					if (G[player[i].x][player[i].y] == MINSHORT)
+					{
+						--model.y;
+						if (i == 0)player[0] = player[1];
+					}
+				}
+				if (des || model.y == 0)
 				{
 					if (model.x == 3)
 					{
 						show();
 						temp = _getch();
-						if (temp == -32) temp = _getch();
+						if (temp == 0 || temp == 0xE0) _getch();
 					}
-					if (i < checknum - 1)
+					if (i < checknum - 1 && des)
 					{
 						gotoxy(0, m + 2);
 						cout << "恭喜通第 " << i + 1 << " 关\n按任意键继续\n按R键重置本关\n";
+					}
+					else if(des)
+					{
+						system("cls");
+						SetFont(font);
+						middle("恭喜通关！", 5);
+						middle("按任意键继续", 9);
+						middle("按R键重置本关", 11);
 					}
 					else
 					{
 						system("cls");
 						SetFont(font);
-						middle("恭喜通关！", 5);
+						rgb_set(255, 0, 0, 0, 0, 0);
+						middle("GAME OVER", 5);
+						rgb_set(204, 204, 204, 0, 0, 0);
 						middle("按任意键继续", 9);
 						middle("按R键重置本关", 11);
 					}
@@ -1155,8 +1204,7 @@ int main()
 				if (!isGameKey()) continue;
 				if (KEYDOWN(VK_ESCAPE))
 				{
-					temp = SleepAndClear(300);
-					//while ((temp = _getch()) != 27);
+					while (_getch() != ESC);
 					break;
 				}
 				if (model.x == 3) move3D();
