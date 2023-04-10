@@ -417,13 +417,14 @@ void showMoster(double len)
 
 	double size = get3Dblockwidth(len);
 	double scale = monster_size / size;
+	bool breakflg;
 	for (int i = 0; i < size; ++i)
 		for (int j = 0; j < size; ++j)
 		{
 			x = screenWidth / 2 - size / 2 + i;
 			y = screenHafeHeight - size / 2 + j;
 
-			bool breakflg = false;
+			breakflg = false;
 			for (int ii = i * scale; ii < (i + 1) * scale && !breakflg; ++ii)
 				for (int jj = j * scale; jj < (j + 1) * scale; ++jj)
 				{
@@ -436,7 +437,8 @@ void showMoster(double len)
 			if (breakflg)
 			{
 				gotoxy(x * 2, y);
-				outputWithType(MONSTER);
+				//outputWithType(MONSTER);
+				cout << y;
 			}
 		}
 	;
@@ -689,7 +691,7 @@ void moveMonster(int i)
 		mst.x += step[mov];
 		mst.y += step[mov + 4];
 		G[mst.x][mst.y] = MONSTER;
-		qshow(mst, s);
+		if (model.y != 3) qshow(mst, s);
 	}
 }
 
@@ -840,7 +842,6 @@ void inline move()
 	}
 	moveMosnters();
 }
-
 
 void dirmove(int d)
 {//视角转动
