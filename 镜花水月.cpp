@@ -37,12 +37,13 @@ using namespace std;
 #define left_key 57419
 #define right_key 57421
 #define maxViewLen 10
-#define maxViewWright 100
+#define maxViewWidth 100
 #define MAXHEIGHT 47
 #define MAXWIDTH 93
 #define screenWidth (MAXWIDTH + 3)
 #define screenHafeHeight  (MAXHEIGHT / 2)
 
+const double Pi = 3.1415926535897;
 struct block
 {
 	int row, column, direction;
@@ -69,6 +70,7 @@ struct point
 }player[2], last_player[2], camera, monster[20];
 
 bool playerlive;
+int playernum;
 int monster_num = 2;
 vector<block> myblock;
 int x_num = 1, y_num = 1;//矿工位置
@@ -85,6 +87,35 @@ const int difficulty[5][2] = {
 	{21,21},
 	{31,41},
 	{MAXHEIGHT,MAXWIDTH},
+};
+
+const int monster_size = 50;
+const bool monster_image[monster_size + 5][monster_size + 5]
+= {
+{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,},
+{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
+{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
+{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
+{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
+{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
+{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
+{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
+{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
+{0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,1,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,},
+{0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,1,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,},
+{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,},
+{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
+{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
+{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
+{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
+{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
+{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
+{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,1,1,0,0,1,1,0,0,1,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
+{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
+{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
+{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
+{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,},
+{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,},
 };
 
 
@@ -251,6 +282,11 @@ bool isAnyKey()
 	return false;
 }
 
+inline double get3Dblockwidth(double len)
+{
+	return 0.5 / (len * tan(maxViewWidth / 2.0 / 180.0 * Pi)) * screenWidth;
+}
+
 struct Ray
 {
 	double k;
@@ -279,8 +315,8 @@ struct Ray
 double touchBlock(int x, int y, Ray ray)
 {
 	double x0 = ray.x0, y0 = ray.y0;
-	if (G[x][y] == NOTHING)return -1;
-	int b1 = x < x0 ? 1 : 0, b2 = y < y0 ? 1 : 0;
+	//if (G[x][y] == NOTHING)return -1;
+	double b1 = (x < x0 ? 1 : 0), b2 = (y < y0 ? 1 : 0);
 	double a1 = ray(x + b1), a2 = ray.Y(y + b2);
 	if (a1 >= y && a1 <= y + 1)
 	{
@@ -288,7 +324,7 @@ double touchBlock(int x, int y, Ray ray)
 	}
 	else if (a2 >= x && a2 <= x + 1)
 	{
-		return sqrt((y + b2 - y0) * (y + b2 - y0) + (x0 - a2) * (x0 - a2));
+		return sqrt((a2 - x0) * (a2 - x0) + (y + b2 - y0) * (y + b2 - y0));
 	}
 	return -1;
 }
@@ -338,26 +374,26 @@ pair<double, int> getrayline(int dir, Ray ray)
 
 void getList(double* list, int* clist, int size, int x, int y, int dir, double view)
 {
-	double PI = 3.1415926535897;
+
 	double begin;
 	switch (dir)
 	{
 	case up:
-		begin = PI;
+		begin = Pi;
 		break;
 	case down:
 		begin = 0;
 		break;
 	case left:
-		begin = PI * 3 / 2;
+		begin = Pi * 3 / 2;
 		break;
 	case right:
-		begin = PI / 2;
+		begin = Pi / 2;
 		break;
 	default:
 		return;
 	}
-	view = view / 180 * PI;
+	view = view / 180 * Pi;
 	for (int i = 0; i < size; ++i)
 	{
 		double k = tan(begin + view / 2 - view / size * i);
@@ -368,12 +404,50 @@ void getList(double* list, int* clist, int size, int x, int y, int dir, double v
 	}
 }
 
+void showMoster(double len)
+{
+	if (len < 0)return;
+	if (len == 0)
+	{
+		return;
+	}
+
+	int x;
+	int y;
+
+	double size = get3Dblockwidth(len);
+	double scale = monster_size / size;
+	for (int i = 0; i < size; ++i)
+		for (int j = 0; j < size; ++j)
+		{
+			x = screenWidth / 2 - size / 2 + i;
+			y = screenHafeHeight - size / 2 + j;
+
+			bool breakflg = false;
+			for (int ii = i * scale; ii < (i + 1) * scale && !breakflg; ++ii)
+				for (int jj = j * scale; jj < (j + 1) * scale; ++jj)
+				{
+					if (monster_image[jj][ii])
+					{
+						breakflg = true;
+						break;
+					}
+				}
+			if (breakflg)
+			{
+				gotoxy(x * 2, y);
+				outputWithType(MONSTER);
+			}
+		}
+	;
+}
+
 void show3D()
 {//刷新(3D)
 	gotoxy(0, 0);
 	double* dl = new double[screenWidth];
 	int* cl = new int[screenWidth];
-	getList(dl, cl, screenWidth, player[0].x, player[0].y, dir[0], maxViewWright);
+	getList(dl, cl, screenWidth, player[0].x, player[0].y, dir[0], maxViewWidth);
 	for (int h = 0; h < screenHafeHeight; ++h)
 	{
 		for (int i = 0; i < screenWidth; ++i)
@@ -398,6 +472,20 @@ void show3D()
 	}
 	delete[]dl;
 	delete[]cl;
+
+	for (int j = 0; j < 4; ++j)
+	{
+		if (stepdir[j] != dir[0])continue;
+		for (int i = 0; i < maxViewLen; ++i)
+		{
+			if (G[i * step[j] + player[0].x][i * step[j + 4] + player[0].y] == MONSTER)
+			{
+				showMoster(i);
+				break;
+			}
+		}
+	}
+
 }
 
 void init()
@@ -1089,6 +1177,7 @@ int main()
 		default:
 			break;
 		}
+		playernum = model.y;
 		system("cls");
 		SetFont();
 		for (int i = 0; i < checknum; i++)
@@ -1173,6 +1262,7 @@ int main()
 					{
 						if (KEYDOWN('R'))
 						{
+							model.y = playernum;
 							system("cls");
 							SetFont();
 							for (int i = 0; i < 2; i++)
