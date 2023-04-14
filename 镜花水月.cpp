@@ -67,11 +67,11 @@ struct point
 		x = _x;
 		y = _y;
 	}
-}player[2], last_player[2], camera, monster[20];
+}player[2], last_player[2], camera, monster[102];
 
 bool playerlive;
 int playernum;
-int monster_num = 2;
+int monster_num = 0;
 vector<block> myblock;
 int x_num = 1, y_num = 1;//矿工位置
 int G[1002][1002];
@@ -1152,7 +1152,7 @@ int main()
 	while (1)
 	{
 		system("title 镜花水月");
-		monster_num = 2;
+		monster_num = 0;
 		model = menu();
 		n = m = 0;
 		switch (model.x)
@@ -1166,13 +1166,13 @@ int main()
 			if (temp == 0 || temp == 0xE0) _getch();
 			break;
 		case 2:
-			cout << "请输入迷宫的行数、列数：\n";
+			cout << "请输入迷宫的行数、列数和敌人数量：\n";
 			system("title 镜花水月 自由模式");
 			checknum = 1;
-			cin >> m >> n;
-			if (m <= 0 || n <= 0 || m > 1000 || n > 1000)
+			cin >> m >> n >> monster_num;
+			if (m <= 0 || n <= 0 || monster_num < 0 || m > 1000 || n > 1000 || monster_num > 100)
 			{
-				cout << "请输入正确的迷宫大小\n";
+				cout << "请输入正确的迷宫大小和敌人数量\n";
 				temp = _getch();
 				if (temp == 0 || temp == 0xE0) _getch();
 				cin.clear();
@@ -1183,13 +1183,13 @@ int main()
 			if (n % 2 == 0) n++;
 			break;
 		case 3:
-			cout << "请输入迷宫的行列数：\n";
+			cout << "请输入迷宫的行数、列数和敌人数量：\n";
 			system("title 镜花水月 娱乐模式");
 			checknum = 1;
-			cin >> m >> n;
-			if (m <= 0 || n <= 0)
+			cin >> m >> n >> monster_num;
+			if (m <= 0 || n <= 0 || monster_num < 0 || m > 1000 || n > 1000 || monster_num > 100)
 			{
-				cout << "请输入正确的迷宫大小\n";
+				cout << "请输入正确的迷宫大小和敌人数量\n";
 				temp = _getch();
 				if (temp == 0 || temp == 0xE0) _getch();
 				cin.clear();
@@ -1200,13 +1200,13 @@ int main()
 			if (n % 2 == 0) n++;
 			break;
 		case 4:
-			cout << "请输入迷宫的行列数：\n";
+			cout << "请输入迷宫的行数、列数和敌人数量：\n";
 			system("title 镜花水月 无尽模式");
 			checknum = 1;
-			cin >> m >> n;
-			if (m <= 0 || n <= 0)
+			cin >> m >> n >> monster_num;
+			if (m <= 0 || n <= 0 || monster_num < 0 || m > 1000 || n > 1000 || monster_num > 100)
 			{
-				cout << "请输入正确的迷宫大小\n";
+				cout << "请输入正确的迷宫大小和敌人数量\n";
 				temp = _getch();
 				if (temp == 0 || temp == 0xE0) _getch();
 				cin.clear();
