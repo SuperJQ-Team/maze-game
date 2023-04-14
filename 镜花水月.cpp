@@ -67,7 +67,7 @@ struct point
 		x = _x;
 		y = _y;
 	}
-}player[2], last_player[2], camera, monster[20];
+}player[2], last_player[2], camera, monster[102];
 
 bool playerlive;
 int playernum;
@@ -1170,9 +1170,9 @@ int main()
 			system("title 镜花水月 自由模式");
 			checknum = 1;
 			cin >> m >> n >> monster_num;
-			if (m <= 0 || n <= 0 || m > 1000 || n > 1000)
+			if (m <= 0 || n <= 0 || monster_num < 0 || m > 1000 || n > 1000 || monster_num > 100)
 			{
-				cout << "请输入正确的迷宫大小\n";
+				cout << "请输入正确的迷宫大小和敌人数量\n";
 				temp = _getch();
 				if (temp == 0 || temp == 0xE0) _getch();
 				cin.clear();
@@ -1187,9 +1187,9 @@ int main()
 			system("title 镜花水月 娱乐模式");
 			checknum = 1;
 			cin >> m >> n >> monster_num;
-			if (m <= 0 || n <= 0)
+			if (m <= 0 || n <= 0 || monster_num < 0 || m > 1000 || n > 1000 || monster_num > 100)
 			{
-				cout << "请输入正确的迷宫大小\n";
+				cout << "请输入正确的迷宫大小和敌人数量\n";
 				temp = _getch();
 				if (temp == 0 || temp == 0xE0) _getch();
 				cin.clear();
@@ -1204,9 +1204,9 @@ int main()
 			system("title 镜花水月 无尽模式");
 			checknum = 1;
 			cin >> m >> n >> monster_num;
-			if (m <= 0 || n <= 0)
+			if (m <= 0 || n <= 0 || monster_num < 0 || m > 1000 || n > 1000 || monster_num > 100)
 			{
-				cout << "请输入正确的迷宫大小\n";
+				cout << "请输入正确的迷宫大小和敌人数量\n";
 				temp = _getch();
 				if (temp == 0 || temp == 0xE0) _getch();
 				cin.clear();
