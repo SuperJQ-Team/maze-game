@@ -1095,7 +1095,7 @@ point menu()
 		else if (choose.x == 3)
 		{
 			middle("  自由模式  ", 8);
-			middle("『娱乐模式』", 10);
+			middle("『第一人称模式』", 10);
 			middle("  无尽模式  ", 12);
 		}
 		else if (choose.x == 4)
